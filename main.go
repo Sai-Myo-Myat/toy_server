@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+    //open tcp connection (socket)
     ln, err := net.Listen("tcp", ":8080")
     if err != nil {
         panic(err)
@@ -16,6 +17,7 @@ func main() {
     fmt.Println("RFC-like Server running on http://localhost:8080")
 
     for {
+        // Accept connections in a loop and spawn a goroutine per connection.
         conn, err := ln.Accept()
         if err != nil {
             continue
@@ -26,6 +28,7 @@ func main() {
 
 func handleConnection(conn net.Conn) {
     defer conn.Close()
+    // Wrap the connection with bufio.Reader so ReadString(' ') can read a full line
     reader := bufio.NewReader(conn)
 
     requestLine, _ := reader.ReadString('\n')
@@ -33,6 +36,7 @@ func handleConnection(conn net.Conn) {
     if len(parts) < 3 {
         return
     }
+    // The first line contains the method, path and protocol version
     method, path, version := parts[0], parts[1], parts[2]
 
     headers := make(map[string][]string)
@@ -53,6 +57,8 @@ func handleConnection(conn net.Conn) {
     fmt.Println("Method:", method, "Path:", path, "Version:", version)
     fmt.Println("Headers:", headers)
 
+    // For HTTP/1.1, Host is required. If it’s missing, return 400 Bad Request.
+
     if _, ok := headers["Host"]; !ok && version == "HTTP/1.1" {
         badReq := "HTTP/1.1 400 Bad Request\r\n" +
             "Content-Length: 0\r\n\r\n"
@@ -68,6 +74,7 @@ func handleConnection(conn net.Conn) {
     conn.Write([]byte(response))
 }
 
+// By canonicalizing, we always store and access headers in the same predictable format (e.g., Content-Type, User-Agent)
 func canonicalHeaderKey(s string) string {
     s = strings.ToLower(s)
     parts := strings.Split(s, "-")
