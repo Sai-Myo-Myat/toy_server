@@ -12,11 +12,9 @@
 ## Run locally
 
 ```
-git clone https://github.com/Sai-Myo-Myat/toy_server.git //https
+git clone https://github.com/Sai-Myo-Myat/toy_server.git
 
 cd toy_server
-
-go mod tidy
 
 go run .
 ```
